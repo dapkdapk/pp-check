@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pp-check"
+version = "0.1.0"
+description = ""
+authors = ["dapk <pio4000@googlemail.com>"]
+readme = "README.md"
+packages = [
+    {include = "app"},
+]
+
+[tool.poetry.scripts]
+ppcheck = 'app.ppcheck:main'
+
+[tool.poetry.dependencies]
+python = "^3.11"
+click = "^8.1.7"
+terminaltables = "^3.1.10"
+inquirer = "^3.3.0"
+pyperclip = "^1.9.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
