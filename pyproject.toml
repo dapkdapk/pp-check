@@ -12,11 +12,13 @@ packages = [
 ppcheck = 'app.ppcheck:main'
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 click = "^8.1.7"
 terminaltables = "^3.1.10"
 inquirer = "^3.3.0"
 pyperclip = "^1.9.0"
+tomli = "^2.0.1"
+
 
 
 [build-system]

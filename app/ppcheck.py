@@ -1,6 +1,6 @@
 import os
 import sys
-import tomllib
+import tomli
 
 import click
 import inquirer
@@ -15,7 +15,7 @@ def main(checkpath):
         toml_file = os.path.join(os.path.expanduser(checkpath), "pyproject.toml")
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
-                pp_dict = tomllib.load(f)
+                pp_dict = tomli.load(f)
             print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
             questions = [
                 inquirer.List(
@@ -26,7 +26,7 @@ def main(checkpath):
             ]
             answers = inquirer.prompt(questions)
             script = "poetry run {}".format(answers["script"])
-            print("Copy to clipboard:", script)
+            print(f"Copied '{script}' to clipboard:", script)
             pyperclip.copy(script)
 
     except Exception as e:
