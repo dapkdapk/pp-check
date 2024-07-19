@@ -4,7 +4,7 @@ This tool is used exclusively for Poetry projects. As soon as you have a poetry 
 
 ## requirements
 
-poetry version >=1.83, python version >= 3.11
+poetry version >=1.83, python version >= 3.10
 
 ## install
 

@@ -1,18 +1,29 @@
 import os
 import sys
-import tomli
 
 import click
 import inquirer
 import pyperclip
+import tomli
 from terminaltables import AsciiTable
 
 
 @click.command()
-@click.argument("checkpath", type=click.Path(exists=True))
-def main(checkpath):
+@click.argument("check_poetry_path", type=click.Path(exists=True))
+def main(check_poetry_path):
+    """
+    This tool is used exclusively for Poetry projects.
+    As soon as you have a poetry project in front of you in the console,
+    you can use this tool to quickly find out which script commands the poetry project contains.
+
+    usage:
+    set path of poetry project, eg.\n
+    $ poetry run ppcheck ~/poetry-project
+    """
     try:
-        toml_file = os.path.join(os.path.expanduser(checkpath), "pyproject.toml")
+        toml_file = os.path.join(
+            os.path.expanduser(check_poetry_path), "pyproject.toml"
+        )
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
+pip list | awk '{print $1}' | grep pp-check | xargs pip uninstall -y
 poetry install
+poetry run pytest
 poetry build
-if [[ $(pip list | grep 'pp-check') == *fotosort* ]]; then
-  pip uninstall pp-check -y
-fi
 pip install dist/pp_check-$(poetry version -s)-py3-none-any.whl
