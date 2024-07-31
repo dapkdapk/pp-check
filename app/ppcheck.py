@@ -1,5 +1,4 @@
 import os
-import sys
 
 import click
 import inquirer
@@ -7,10 +6,23 @@ import pyperclip
 import tomli
 from terminaltables import AsciiTable
 
+"""
+author:     dapk@gmx.net
+license:    MIT
+"""
+
+# using https://python-inquirer.readthedocs.io/
+
 
 @click.command()
 @click.argument("check_poetry_path", type=click.Path(exists=True))
-def main(check_poetry_path):
+@click.option(
+    "-c",
+    "--copy-clipboard",
+    is_flag=True,
+    help="flag for copy choosen command to clipboard",
+)
+def main(check_poetry_path, copy_clipboard):
     """
     This tool is used exclusively for Poetry projects.
     As soon as you have a poetry project in front of you in the console,
@@ -20,6 +32,11 @@ def main(check_poetry_path):
     set path of poetry project, eg.\n
     $ poetry run ppcheck ~/poetry-project
     """
+    _title = "|         Poetry pyproject.toml check for script(s)         |"
+    _title_len = len(_title)
+    print("/" + str("=" * (_title_len - 2)) + "\\")
+    print(_title.upper())
+    print("\\" + str("=" * (_title_len - 2)) + "/")
     try:
         toml_file = os.path.join(
             os.path.expanduser(check_poetry_path), "pyproject.toml"
@@ -31,17 +48,32 @@ def main(check_poetry_path):
             questions = [
                 inquirer.List(
                     "script",
-                    message="Which script you want to execute as 'poetry run ..'?",
-                    choices=list(pp_dict["tool"]["poetry"]["scripts"].keys()),
+                    message="Choose script to execute",
+                    choices=[
+                        "poetry run {}".format(cmd)
+                        for cmd in list(pp_dict["tool"]["poetry"]["scripts"].keys())
+                    ],
                 ),
+                inquirer.Text("args", message="With argument(s)", default="--help"),
             ]
             answers = inquirer.prompt(questions)
-            script = "poetry run {}".format(answers["script"])
-            print(f"Copied '{script}' to clipboard:", script)
-            pyperclip.copy(script)
+            cmd = "{} {}".format(answers["script"], answers["args"])
+            if copy_clipboard:
+                pyperclip.copy(cmd)
+            _exec_title = (
+                "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
+            )
+            _exec_len = len(_exec_title)
+            print("-" * (_exec_len if _exec_len > _title_len else _title_len))
+            print(_exec_title)
+            print("-" * (_exec_len if _exec_len > _title_len else _title_len))
+            print(os.popen(cmd).read())
+
+        else:
+            print(f"ERROR: {toml_file} does not exist.")
 
     except Exception as e:
-        print(f"ERROR: Something goes wrong. {e}")
+        print(f"WARNING: Something goes wrong or aborted. {e}")
 
 
 def _create_table(entries: dict, title: str = ""):
