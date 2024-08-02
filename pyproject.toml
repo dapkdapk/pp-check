@@ -10,14 +10,16 @@ packages = [
 
 [tool.poetry.scripts]
 ppcheck = 'app.ppcheck:main'
+build = "app.pyinstaller:install"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.10,<3.13"
 click = "^8.1.7"
 terminaltables = "^3.1.10"
 inquirer = "^3.3.0"
 pyperclip = "^1.9.0"
 tomli = "^2.0.1"
+pyinstaller = "6.7.0"
 
 [tool.poetry.dev-dependencies]
 black = "^24.4.2"
