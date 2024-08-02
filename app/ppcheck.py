@@ -46,7 +46,7 @@ def main(check_poetry_path, copy_clipboard):
                 pp_dict = tomli.load(f)
             if (
                 "tool" in pp_dict
-                and "poetry" in pp_dict
+                and "poetry" in pp_dict["tool"]
                 and "scripts" in pp_dict["tool"]["poetry"]
             ):
                 print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
