@@ -44,31 +44,47 @@ def main(check_poetry_path, copy_clipboard):
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)
-            print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
-            questions = [
-                inquirer.List(
-                    "script",
-                    message="Choose script to execute",
-                    choices=[
-                        "poetry run {}".format(cmd)
-                        for cmd in list(pp_dict["tool"]["poetry"]["scripts"].keys())
-                    ],
-                ),
-                inquirer.Text("args", message="With argument(s)", default="--help"),
-            ]
-            answers = inquirer.prompt(questions)
-            cmd = "{} {}".format(answers["script"], answers["args"])
-            if copy_clipboard:
-                pyperclip.copy(cmd)
-            _exec_title = (
-                "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
-            )
-            _exec_len = len(_exec_title)
-            print("-" * (_exec_len if _exec_len > _title_len else _title_len))
-            print(_exec_title)
-            print("-" * (_exec_len if _exec_len > _title_len else _title_len))
-            print(os.popen(cmd).read())
-
+            if (
+                "tool" in pp_dict
+                and "poetry" in pp_dict
+                and "scripts" in pp_dict["tool"]["poetry"]
+            ):
+                print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
+                questions = [
+                    inquirer.List(
+                        "script",
+                        message="Choose script to execute",
+                        choices=[
+                            "poetry run {}".format(cmd)
+                            for cmd in list(pp_dict["tool"]["poetry"]["scripts"].keys())
+                        ],
+                    ),
+                    inquirer.Text(
+                        "args", message="Run w/ argument(s)", default="--help"
+                    ),
+                ]
+                answers = inquirer.prompt(questions)
+                cmd = "{} {}".format(answers["script"], answers["args"])
+                if copy_clipboard:
+                    pyperclip.copy(cmd)
+                _exec_title = (
+                    "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
+                )
+                _exec_len = len(_exec_title)
+                print("-" * (_exec_len if _exec_len > _title_len else _title_len))
+                print(_exec_title)
+                print("-" * (_exec_len if _exec_len > _title_len else _title_len))
+                print(
+                    os.popen(
+                        "pushd {} > /dev/null && ".format(os.path.dirname(toml_file))
+                        + cmd
+                        + " && popd > /dev/null"
+                    ).read()
+                )
+            else:
+                print(
+                    f"No script command(s) available in {os.path.basename(toml_file)}."
+                )
         else:
             print(f"ERROR: {toml_file} does not exist.")
 
