@@ -72,7 +72,7 @@ def main(check_poetry_path, copy_clipboard):
                 inquirer.Checkbox(
                     "exec_cmds",
                     message="Run commands at first by selecting with key 'space', press 'enter' for next",
-                    choices=["poetry lock", "poetry install", "poetry update"],
+                    choices=["poetry update", "poetry lock", "poetry install"],
                 ),
             ]
             tasks = inquirer.prompt(q, theme=BlueComposure())
