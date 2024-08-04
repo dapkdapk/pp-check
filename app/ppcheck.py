@@ -71,8 +71,8 @@ def main(check_poetry_path, copy_clipboard):
             q = [
                 inquirer.Checkbox(
                     "exec_cmds",
-                    message="Run commands first by selecting with key 'space'. press 'enter' for next.",
-                    choices=["poetry lock", "poetry install"],
+                    message="Run commands at first by selecting with key 'space', press 'enter' for next",
+                    choices=["poetry lock", "poetry install", "poetry update"],
                 ),
             ]
             tasks = inquirer.prompt(q, theme=BlueComposure())
@@ -80,13 +80,19 @@ def main(check_poetry_path, copy_clipboard):
             if len(tasks["exec_cmds"]) > 0:
                 for task in tasks["exec_cmds"]:
                     if task == "poetry lock":
-                        _chk_lock(_title_len, os.path.dirname(toml_file))
+                        _run_exec("poetry lock", _title_len, os.path.dirname(toml_file))
                     elif task == "poetry install":
-                        _chk_install(_title_len, os.path.dirname(toml_file))
+                        _run_exec(
+                            "poetry install", _title_len, os.path.dirname(toml_file)
+                        )
+                    elif task == "poetry update":
+                        _run_exec(
+                            "poetry update", _title_len, os.path.dirname(toml_file)
+                        )
 
             # check scripts with inputs
             if _attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
-                _chk_scripts(pp_dict, copy_clipboard, _title_len, toml_file)
+                _run_scripts(pp_dict, copy_clipboard, _title_len, toml_file)
             else:
                 print(
                     f"No script command(s) available in {os.path.basename(toml_file)}."
@@ -98,17 +104,12 @@ def main(check_poetry_path, copy_clipboard):
         print(f"WARNING: Something goes wrong or aborted. {e}")
 
 
-def _chk_lock(_title_len, exec_path):
-    _print_title("Execute 'poetry lock'", _title_len)
-    _execute_cmd(exec_path, "poetry lock")
+def _run_exec(cmd, _title_len, exec_path):
+    _print_title(f"Execute '{cmd}'", _title_len)
+    _execute_cmd(exec_path, cmd)
 
 
-def _chk_install(_title_len, exec_path):
-    _print_title("Execute 'poetry install'", _title_len)
-    _execute_cmd(exec_path, "poetry install")
-
-
-def _chk_scripts(pp_dict, copy_clipboard, _title_len, toml_file):
+def _run_scripts(pp_dict, copy_clipboard, _title_len, toml_file):
     print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
     questions = [
         inquirer.List(
