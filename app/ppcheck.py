@@ -4,6 +4,7 @@ import click
 import inquirer
 import pyperclip
 import tomli
+import platform
 from terminaltables import AsciiTable
 from inquirer.themes import GreenPassion, BlueComposure
 
@@ -139,8 +140,15 @@ def _print_title(title, width):
 
 
 def _execute_cmd(exec_path: str, cmd: str, print_it: bool = True):
+    _goes = ""
+    if platform.system() == "Windows":
+        _goes = "NUL"
+    else:
+        _goes = "/dev/null"
     out = os.popen(
-        "pushd {} > /dev/null && ".format(exec_path) + cmd + " && popd > /dev/null"
+        "pushd {} > {} && ".format(exec_path, _goes)
+        + cmd
+        + " && popd > {}".format(_goes)
     ).read()
     if print_it:
         print(out)
