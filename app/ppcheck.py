@@ -14,6 +14,8 @@ license:    MIT
 
 # using https://python-inquirer.readthedocs.io/
 
+DEFAULT_LINE_LENGTH = 72
+
 
 @click.command()
 @click.argument("check_poetry_path", type=click.Path(exists=True))
@@ -33,18 +35,10 @@ def main(check_poetry_path, copy_clipboard):
     set path of poetry project, eg.\n
     $ poetry run ppcheck ~/poetry-project
     """
-    _title = (
-        "|"
-        + ("#" * 8)
-        + " Poetry pyproject.toml check for script(s) "
-        + ("#" * 8)
-        + "|"
-    )
-    _title_len = len(_title)
-    print("/" + str("=" * (_title_len - 2)) + "\\")
-    print(_title.upper())
-    print("\\" + str("=" * (_title_len - 2)) + "/")
+
+    print(_create_table({"PPCHECK": "GET POETRY DETAILS"}))
     try:
+        # get/load pyproject.yaml
         toml_file = os.path.join(
             os.path.expanduser(check_poetry_path), "pyproject.toml"
         )
@@ -60,19 +54,44 @@ def main(check_poetry_path, copy_clipboard):
                         {
                             "name": _info["name"],
                             "version": _info["version"],
-                            "description": _info["description"],
+                            "description": _short(_info["description"], 72),
                             "authors": "\n".join(_info["authors"]),
                         },
                         "info",
                     )
                 )
+        # choose scripts or stndards commands
+        q = [
+            inquirer.List(
+                "intro",
+                message="Choose one:",
+                choices=["show script commands", "execute poetry commands"],
+                default="no",
+            ),
+        ]
+        start_seq = inquirer.prompt(q)
 
+        if start_seq["intro"] == "show script commands":
+
+            # check scripts with inputs
+            if _attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
+                _run_scripts(pp_dict, copy_clipboard, toml_file, DEFAULT_LINE_LENGTH)
+            else:
+                print(
+                    f"No script command(s) available in {os.path.basename(toml_file)}."
+                )
+        elif start_seq["intro"] == "execute poetry commands":
             # choice what do you want?
             q = [
                 inquirer.Checkbox(
                     "exec_cmds",
                     message="Run commands at first by selecting with key 'space', press 'enter' for next",
-                    choices=["poetry update", "poetry lock", "poetry install"],
+                    choices=[
+                        "poetry update",
+                        "poetry lock",
+                        "poetry install",
+                        "poetry show --tree",
+                    ],
                 ),
             ]
             tasks = inquirer.prompt(q, theme=BlueComposure())
@@ -80,23 +99,29 @@ def main(check_poetry_path, copy_clipboard):
             if len(tasks["exec_cmds"]) > 0:
                 for task in tasks["exec_cmds"]:
                     if task == "poetry lock":
-                        _run_exec("poetry lock", _title_len, os.path.dirname(toml_file))
+                        _run_exec(
+                            "poetry lock",
+                            os.path.dirname(toml_file),
+                            DEFAULT_LINE_LENGTH,
+                        )
                     elif task == "poetry install":
                         _run_exec(
-                            "poetry install", _title_len, os.path.dirname(toml_file)
+                            "poetry install",
+                            os.path.dirname(toml_file),
+                            DEFAULT_LINE_LENGTH,
                         )
                     elif task == "poetry update":
                         _run_exec(
-                            "poetry update", _title_len, os.path.dirname(toml_file)
+                            "poetry update",
+                            os.path.dirname(toml_file),
+                            DEFAULT_LINE_LENGTH,
                         )
-
-            # check scripts with inputs
-            if _attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
-                _run_scripts(pp_dict, copy_clipboard, _title_len, toml_file)
-            else:
-                print(
-                    f"No script command(s) available in {os.path.basename(toml_file)}."
-                )
+                    elif task == "poetry show --tree":
+                        _run_exec(
+                            "poetry show --tree",
+                            os.path.dirname(toml_file),
+                            DEFAULT_LINE_LENGTH,
+                        )
         else:
             print(f"ERROR: {toml_file} does not exist.")
 
@@ -104,12 +129,12 @@ def main(check_poetry_path, copy_clipboard):
         print(f"WARNING: Something goes wrong or aborted. {e}")
 
 
-def _run_exec(cmd, _title_len, exec_path):
-    _print_title(f"Execute '{cmd}'", _title_len)
+def _run_exec(cmd, exec_path, line_len: int = 72):
+    _print_title(f"Execute '{cmd}'", line_len)
     _execute_cmd(exec_path, cmd)
 
 
-def _run_scripts(pp_dict, copy_clipboard, _title_len, toml_file):
+def _run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
     print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
     questions = [
         inquirer.List(
@@ -127,7 +152,7 @@ def _run_scripts(pp_dict, copy_clipboard, _title_len, toml_file):
     if copy_clipboard:
         pyperclip.copy(cmd)
     _exec_title = "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
-    _print_title(_exec_title, _title_len)
+    _print_title(_exec_title, line_len)
     _execute_cmd(os.path.dirname(toml_file), cmd)
 
 
@@ -172,6 +197,13 @@ def _create_table(entries: dict, title: str = ""):
         tab.append([k, v])
     table = AsciiTable(table_data=tab, title=title)
     return table.table
+
+
+def _short(input_str: str, char_length: int, ends: str = "..."):
+    if len(input_str) > char_length:
+        return input_str[:char_length] + ends
+    else:
+        return input_str
 
 
 if __name__ == "main":

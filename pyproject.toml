@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pp-check"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "This tool is used exclusively for Poetry projects. As soon as you have a poetry project in front of you in the console, you can use this tool to quickly find out which script commands the poetry project contains."
 authors = ["dapk <pio4000@googlemail.com>"]
 readme = "README.md"
 packages = [
