@@ -57,7 +57,6 @@ def main(check_poetry_path, copy_clipboard):
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)
-
             # check info
             if _attr_exists(pp_dict, dict, "tool", "poetry"):
                 _info = pp_dict["tool"]["poetry"]
@@ -72,53 +71,67 @@ def main(check_poetry_path, copy_clipboard):
                         "info",
                     )
                 )
-        # choose scripts or stndards commands
-        q = [
-            inquirer.List(
-                "intro",
-                message="Choose one:",
-                choices=["show script commands", "execute poetry commands"],
-                default="no",
-            ),
-        ]
-        start_seq = inquirer.prompt(q)
+        _continue = True
+        while _continue:
 
-        if start_seq["intro"] == "show script commands":
+            print("")
 
-            # check scripts with inputs
-            if _attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
-                _run_scripts(pp_dict, copy_clipboard, toml_file, DEFAULT_LINE_LENGTH)
-            else:
-                print(
-                    f"No script command(s) available in {os.path.basename(toml_file)}."
-                )
-        elif start_seq["intro"] == "execute poetry commands":
-            # choice what do you want?
-            _choices = list(EPoetryCmds._value2member_map_)
-            if (
-                os.path.isdir(os.path.join(os.path.dirname(toml_file), "tests"))
-                == False
-            ):
-                _choices.remove(EPoetryCmds.PYTEST.value)
+            # choose scripts or stndards commands
             q = [
-                inquirer.Checkbox(
-                    "exec_cmds",
-                    message="Run commands at first by selecting with key 'space', press 'enter' for next",
-                    choices=_choices,
+                inquirer.List(
+                    "intro",
+                    message="Make your choice:",
+                    choices=[
+                        "show script commands",
+                        "execute poetry commands",
+                        "< exit",
+                    ],
+                    default="no",
                 ),
             ]
-            tasks = inquirer.prompt(q, theme=BlueComposure())
+            start_seq = inquirer.prompt(q)
 
-            if len(tasks["exec_cmds"]) > 0:
-                for cmd in _choices:
-                    if cmd in tasks["exec_cmds"]:
-                        _run_exec(
-                            cmd,
-                            os.path.dirname(toml_file),
-                            DEFAULT_LINE_LENGTH,
-                        )
-        else:
-            print(f"ERROR: {toml_file} does not exist.")
+            if start_seq["intro"] == "show script commands":
+
+                # check scripts with inputs
+                if _attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
+                    _run_scripts(
+                        pp_dict, copy_clipboard, toml_file, DEFAULT_LINE_LENGTH
+                    )
+                else:
+                    print(
+                        f"No script command(s) available in {os.path.basename(toml_file)}."
+                    )
+            elif start_seq["intro"] == "execute poetry commands":
+                # choice what do you want?
+                _choices = list(EPoetryCmds._value2member_map_)
+                if (
+                    os.path.isdir(os.path.join(os.path.dirname(toml_file), "tests"))
+                    == False
+                ):
+                    _choices.remove(EPoetryCmds.PYTEST.value)
+                q = [
+                    inquirer.Checkbox(
+                        "exec_cmds",
+                        message="Run commands at first by selecting with key 'space', press 'enter' for next",
+                        choices=_choices,
+                    ),
+                ]
+                tasks = inquirer.prompt(q, theme=BlueComposure())
+
+                if len(tasks["exec_cmds"]) > 0:
+                    for cmd in _choices:
+                        if cmd in tasks["exec_cmds"]:
+                            _run_exec(
+                                cmd,
+                                os.path.dirname(toml_file),
+                                DEFAULT_LINE_LENGTH,
+                            )
+            elif start_seq["intro"] == "< exit":
+                _continue = False
+            else:
+                print(f"ERROR: {toml_file} does not exist.")
+                quit()
 
     except Exception as e:
         print(f"WARNING: Something goes wrong or aborted. {e}")
@@ -130,32 +143,48 @@ def _run_exec(cmd, exec_path, line_len: int = 72):
 
 
 def _run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
-    print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
-    questions = [
-        inquirer.List(
-            "script",
-            message="Choose script to execute",
-            choices=[
-                "poetry run {}".format(cmd)
-                for cmd in list(pp_dict["tool"]["poetry"]["scripts"].keys())
-            ],
-        ),
-        inquirer.Text("args", message="Run w/ argument(s)", default="--help"),
+    _sub_continue = True
+    _choices = [
+        "poetry run {}".format(cmd)
+        for cmd in list(pp_dict["tool"]["poetry"]["scripts"].keys())
     ]
-    answers = inquirer.prompt(questions, theme=GreenPassion())
-    cmd = "{} {}".format(answers["script"], answers["args"])
-    if copy_clipboard:
-        pyperclip.copy(cmd)
-    _exec_title = "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
-    _print_title(_exec_title, line_len)
-    _execute_cmd(os.path.dirname(toml_file), cmd)
+    _choices.append("< back")
+    while _sub_continue:
+        print(_create_table(pp_dict["tool"]["poetry"]["scripts"], "scripts"))
+        questions = [
+            inquirer.List(
+                "script",
+                message="Choose script to execute",
+                choices=_choices,
+            ),
+        ]
+        answers = inquirer.prompt(questions, theme=GreenPassion())
+
+        if answers["script"] == "< back":
+            _sub_continue = False
+        else:
+            sub_questions = [
+                inquirer.Text("args", message="Run w/ argument(s)", default="--help"),
+            ]
+            answers_sub = inquirer.prompt(sub_questions, theme=GreenPassion())
+            cmd = "{} {}".format(answers["script"], answers_sub["args"])
+            if copy_clipboard:
+                pyperclip.copy(cmd)
+            _exec_title = (
+                "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
+            )
+            _print_title(_exec_title, line_len)
+            _execute_cmd(os.path.dirname(toml_file), cmd)
+            print("")
+            input("Press Enter to continue ...")
 
 
 def _print_title(title, width):
     _exec_len = len(title)
-    print("-" * (_exec_len if _exec_len > width else width))
+    _lines = "-" * (_exec_len if _exec_len > width else width)
+    print(_lines)
     print(title)
-    print("-" * (_exec_len if _exec_len > width else width))
+    print(_lines)
 
 
 def _execute_cmd(exec_path: str, cmd: str):
