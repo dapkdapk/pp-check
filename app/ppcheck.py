@@ -4,6 +4,10 @@ import click
 import inquirer
 import pyperclip
 import tomli
+import subprocess
+from subprocess import CompletedProcess
+import sys
+from enum import Enum
 from terminaltables import AsciiTable
 from inquirer.themes import GreenPassion, BlueComposure
 
@@ -15,6 +19,14 @@ license:    MIT
 # using https://python-inquirer.readthedocs.io/
 
 DEFAULT_LINE_LENGTH = 72
+
+
+class EPoetryCmds(Enum):
+    UPDATE = "poetry update"
+    LOCK = "poetry lock"
+    INSTALL = "poetry install"
+    SHOW_TREE = "poetry show --tree"
+    PYTEST = "poetry run pytest"
 
 
 @click.command()
@@ -82,43 +94,26 @@ def main(check_poetry_path, copy_clipboard):
                 )
         elif start_seq["intro"] == "execute poetry commands":
             # choice what do you want?
+            _choices = list(EPoetryCmds._value2member_map_)
+            if (
+                os.path.isdir(os.path.join(os.path.dirname(toml_file), "tests"))
+                == False
+            ):
+                _choices.remove(EPoetryCmds.PYTEST.value)
             q = [
                 inquirer.Checkbox(
                     "exec_cmds",
                     message="Run commands at first by selecting with key 'space', press 'enter' for next",
-                    choices=[
-                        "poetry update",
-                        "poetry lock",
-                        "poetry install",
-                        "poetry show --tree",
-                    ],
+                    choices=_choices,
                 ),
             ]
             tasks = inquirer.prompt(q, theme=BlueComposure())
 
             if len(tasks["exec_cmds"]) > 0:
-                for task in tasks["exec_cmds"]:
-                    if task == "poetry lock":
+                for cmd in _choices:
+                    if cmd in tasks["exec_cmds"]:
                         _run_exec(
-                            "poetry lock",
-                            os.path.dirname(toml_file),
-                            DEFAULT_LINE_LENGTH,
-                        )
-                    elif task == "poetry install":
-                        _run_exec(
-                            "poetry install",
-                            os.path.dirname(toml_file),
-                            DEFAULT_LINE_LENGTH,
-                        )
-                    elif task == "poetry update":
-                        _run_exec(
-                            "poetry update",
-                            os.path.dirname(toml_file),
-                            DEFAULT_LINE_LENGTH,
-                        )
-                    elif task == "poetry show --tree":
-                        _run_exec(
-                            "poetry show --tree",
+                            cmd,
                             os.path.dirname(toml_file),
                             DEFAULT_LINE_LENGTH,
                         )
@@ -163,13 +158,10 @@ def _print_title(title, width):
     print("-" * (_exec_len if _exec_len > width else width))
 
 
-def _execute_cmd(exec_path: str, cmd: str, print_it: bool = True):
+def _execute_cmd(exec_path: str, cmd: str):
     _dest = "" if platform.system() == "Windows" else " > /dev/null"
-    out = os.popen(
-        "pushd {}{} && ".format(exec_path, _dest) + cmd + " && popd{}".format(_dest)
-    ).read()
-    if print_it:
-        print(out)
+    _cmd = "pushd {}{} && ".format(exec_path, _dest) + cmd + " && popd{}".format(_dest)
+    subprocess.run(_cmd, shell=True, stderr=sys.stderr, stdout=sys.stdout)
 
 
 def _attr_exists(obj_dct, should_type, *keys):
