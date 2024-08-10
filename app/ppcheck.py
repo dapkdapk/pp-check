@@ -1,5 +1,5 @@
 import os
-
+import platform
 import click
 import inquirer
 import pyperclip
@@ -164,8 +164,9 @@ def _print_title(title, width):
 
 
 def _execute_cmd(exec_path: str, cmd: str, print_it: bool = True):
+    _dest = "" if platform.system() == "Windows" else " > /dev/null"
     out = os.popen(
-        "pushd {} > /dev/null && ".format(exec_path) + cmd + " && popd > /dev/null"
+        "pushd {}{} && ".format(exec_path, _dest) + cmd + " && popd{}".format(_dest)
     ).read()
     if print_it:
         print(out)
