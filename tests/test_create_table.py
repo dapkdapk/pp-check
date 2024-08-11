@@ -1,7 +1,5 @@
 import unittest
 
-from terminaltables import AsciiTable
-
 from app.ppcheck import _create_table
 
 
@@ -20,7 +18,3 @@ class TestCreateTableFunction(unittest.TestCase):
         title = "Negative Test"
         expected_output = "+---+----+\n| X | 10 |\n| Y | 20 |\n+---+----+\n"
         self.assertNotEqual(_create_table(entries, title), expected_output)
-
-
-if __name__ == "__main__":
-    unittest.main()

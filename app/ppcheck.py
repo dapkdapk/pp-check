@@ -1,15 +1,15 @@
 import os
 import platform
+import subprocess
+import sys
+from enum import Enum
+
 import click
 import inquirer
 import pyperclip
 import tomli
-import subprocess
-from subprocess import CompletedProcess
-import sys
-from enum import Enum
+from inquirer.themes import BlueComposure, GreenPassion
 from terminaltables import AsciiTable
-from inquirer.themes import GreenPassion, BlueComposure
 
 """
 author:     dapk@gmx.net
