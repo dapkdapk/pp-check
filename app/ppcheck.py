@@ -2,12 +2,14 @@ import os
 import platform
 import subprocess
 import sys
+import time
 from enum import Enum
 
 import click
 import inquirer
 import pyperclip
 import tomli
+from console import fg
 from inquirer.themes import BlueComposure, GreenPassion
 from terminaltables import AsciiTable
 
@@ -48,7 +50,7 @@ def main(check_poetry_path, copy_clipboard):
     $ poetry run ppcheck ~/poetry-project
     """
 
-    print(_create_table({"PPCHECK": "GET POETRY DETAILS"}))
+    print(_create_table({fg.yellow("PPCHECK"): "POETRY PYPROJECT.TOML CHECK"}))
     try:
         # get/load pyproject.yaml
         toml_file = os.path.join(
@@ -63,10 +65,12 @@ def main(check_poetry_path, copy_clipboard):
                 print(
                     _create_table(
                         {
-                            "name": _info["name"],
-                            "version": _info["version"],
-                            "description": _short(_info["description"], 72),
-                            "authors": "\n".join(_info["authors"]),
+                            "name": fg.lightgreen(_info["name"]),
+                            "version": fg.lightblue(_info["version"]),
+                            "description": fg.lightmagenta(
+                                _short(_info["description"], 72)
+                            ),
+                            "authors": fg.blue("\n".join(_info["authors"])),
                         },
                         "info",
                     )
@@ -138,8 +142,10 @@ def main(check_poetry_path, copy_clipboard):
 
 
 def _run_exec(cmd, exec_path, line_len: int = 72):
+    start_time = time.time()
     _print_title(f"Execute '{cmd}'", line_len)
     _execute_cmd(exec_path, cmd)
+    _print_title(".. execution took %s seconds" % (time.time() - start_time), line_len)
 
 
 def _run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
@@ -173,18 +179,22 @@ def _run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
             _exec_title = (
                 "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
             )
+            start_time = time.time()
             _print_title(_exec_title, line_len)
             _execute_cmd(os.path.dirname(toml_file), cmd)
             print("")
+            _print_title(
+                ".. execution took %s seconds" % (time.time() - start_time), line_len
+            )
             input("Press Enter to continue ...")
 
 
-def _print_title(title, width):
+def _print_title(title: str, width: int, str_repeat: str = "~"):
     _exec_len = len(title)
-    _lines = "-" * (_exec_len if _exec_len > width else width)
-    print(_lines)
-    print(title)
-    print(_lines)
+    _lines = str_repeat * (_exec_len if _exec_len > width else width)
+    print(fg.black(_lines))
+    print(fg.blue(title))
+    print(fg.black(_lines))
 
 
 def _execute_cmd(exec_path: str, cmd: str):

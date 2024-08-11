@@ -18,6 +18,7 @@ terminaltables = "^3.1.10"
 inquirer = "^3.3.0"
 pyperclip = "^1.9.0"
 tomli = "^2.0.1"
+console = "^0.9907"
 
 [tool.poetry.dev-dependencies]
 black = "^24.4.2"
