@@ -50,7 +50,6 @@ def main(check_poetry_path, copy_clipboard):
     $ poetry run ppcheck ~/poetry-project
     """
 
-    print(_create_table({fg.yellow("PPCHECK"): "POETRY PYPROJECT.TOML CHECK"}))
     try:
         # get/load pyproject.yaml
         toml_file = os.path.join(
@@ -59,27 +58,33 @@ def main(check_poetry_path, copy_clipboard):
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)
+
             # check info
             if _attr_exists(pp_dict, dict, "tool", "poetry"):
                 _info = pp_dict["tool"]["poetry"]
+                _packages = [list(dict(p).values())[0] for p in _info["packages"]]
+                _deps_list = _deps(pp_dict, "dependencies", "green")
+                _deps_dev_list = _deps(pp_dict, "dev-dependencies", "blue")
+                _dependencies = _tabs(_deps_list, _deps_dev_list)
+                info = {
+                    fg.yellow("PPCHECK"): "POETRY PYPROJECT.TOML CHECK",
+                    "name": fg.lightgreen(_info["name"]),
+                    "version": fg.lightblue(_info["version"]),
+                    "description": fg.lightmagenta(_short(_info["description"], 72)),
+                    "authors": fg.blue("\n".join(_info["authors"])),
+                    "packages": "\n".join(_packages),
+                }
+                if len(_dependencies) > 0:
+                    info.update({"dependencies": _dependencies})
                 print(
                     _create_table(
-                        {
-                            "name": fg.lightgreen(_info["name"]),
-                            "version": fg.lightblue(_info["version"]),
-                            "description": fg.lightmagenta(
-                                _short(_info["description"], 72)
-                            ),
-                            "authors": fg.blue("\n".join(_info["authors"])),
-                        },
-                        "info",
+                        info,
+                        "",
                     )
                 )
         _continue = True
         while _continue:
-
             print("")
-
             # choose scripts or stndards commands
             q = [
                 inquirer.List(
@@ -223,11 +228,15 @@ def _attr_exists(obj_dct, should_type, *keys):
             return False
 
 
-def _create_table(entries: dict, title: str = ""):
+def _create_table(entries: dict, title: str = "", heading_border: bool = True):
+    """
+    check: https://robpol86.github.io/terminaltables/
+    """
     tab = []
     for k, v in entries.items():
         tab.append([k, v])
     table = AsciiTable(table_data=tab, title=title)
+    table.inner_heading_row_border = heading_border
     return table.table
 
 
@@ -236,6 +245,56 @@ def _short(input_str: str, char_length: int, ends: str = "..."):
         return input_str[:char_length] + ends
     else:
         return input_str
+
+
+def _deps(pp_dict: dict, section: str = "dependencies", col: str = "white") -> list:
+    if _attr_exists(pp_dict, dict, "tool", "poetry", section):
+        _dlist = pp_dict["tool"]["poetry"][section]
+        _dl = []
+        for k, v in _dlist.items():
+            _dl.append([getattr(fg, col)(k), v])
+        return _dl
+    else:
+        return []
+
+
+def _tabs(_deps_list: list, _deps_dev_list: list, as_table: bool = True):
+    tab = []
+    if len(_deps_list) > 0 and len(_deps_dev_list) > 0:
+        tab = [[fg.lightgreen("prod"), "", fg.lightblue("dev"), ""]]
+        if len(_deps_list) >= len(_deps_dev_list):
+            i = 0
+            for i in range(len(_deps_list)):
+                if 0 <= i < len(_deps_dev_list):
+                    tab.append(_deps_list[i] + _deps_dev_list[i])
+                else:
+                    tab.append(_deps_list[i] + ["", ""])
+                i += 1
+        else:
+            i = 0
+            for i in range(len(_deps_dev_list)):
+                if 0 <= i < len(_deps_list):
+                    tab.append(_deps_list[i] + _deps_dev_list[i])
+                else:
+                    tab.append(["", ""] + _deps_dev_list[i])
+                i += 1
+    elif len(_deps_list) > 0 and len(_deps_dev_list) < 1:
+        tab = [["prod", ""]]
+        i = 0
+        for i in range(len(_deps_list)):
+            tab.append(_deps_list[i])
+            i += 1
+    elif len(_deps_dev_list) > 0 and len(_deps_list) < 1:
+        tab = [["dev", ""]]
+        i = 0
+        for i in range(len(_deps_dev_list)):
+            tab.append(_deps_dev_list[i])
+            i += 1
+    if as_table and len(tab) > 0:
+        table = AsciiTable(table_data=tab)
+        return table.table
+    else:
+        return tab
 
 
 if __name__ == "main":

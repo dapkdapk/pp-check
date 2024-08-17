@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "pp-check"
-version = "0.1.12"
+version = "0.1.13"
 description = "This tool is used exclusively for Poetry projects. As soon as you have a poetry project in front of you in the console, you can use this tool to quickly find out which script commands the poetry project contains."
 authors = ["dapk <pio4000@googlemail.com>"]
 readme = "README.md"
 packages = [
-    {include = "app"},
+    {include = "app"}
 ]
 
 [tool.poetry.scripts]
@@ -24,6 +24,7 @@ console = "^0.9907"
 black = "^24.4.2"
 isort = "^5.13.2"
 pytest = "^8.2.2"
+
 
 [build-system]
 requires = ["poetry-core"]
