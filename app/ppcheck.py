@@ -9,16 +9,17 @@ import click
 import inquirer
 import pyperclip
 import tomli
-from console import fg
+from colored import Fore, Style
 from inquirer.themes import BlueComposure, GreenPassion
 from terminaltables import AsciiTable
 
 """
 author:     dapk@gmx.net
 license:    MIT
-"""
 
-# using https://python-inquirer.readthedocs.io/
+using:      - https://python-inquirer.readthedocs.io/
+            - https://dslackw.gitlab.io/colored/tables/colors/
+"""
 
 DEFAULT_LINE_LENGTH = 72
 
@@ -67,11 +68,13 @@ def main(check_poetry_path, copy_clipboard):
                 _deps_dev_list = _deps(pp_dict, "dev-dependencies", "blue")
                 _dependencies = _tabs(_deps_list, _deps_dev_list)
                 info = {
-                    fg.yellow("PPCHECK"): "POETRY PYPROJECT.TOML CHECK",
-                    "name": fg.lightgreen(_info["name"]),
-                    "version": fg.lightblue(_info["version"]),
-                    "description": fg.lightmagenta(_short(_info["description"], 72)),
-                    "authors": fg.blue("\n".join(_info["authors"])),
+                    cprint("PPCHECK", fore_256="yellow"): "POETRY PYPROJECT.TOML CHECK",
+                    "name": cprint(_info["name"], fore_256="light_green"),
+                    "version": cprint(_info["version"], fore_256="light_blue"),
+                    "description": cprint(
+                        _short(_info["description"], 72), fore_256="light_magenta"
+                    ),
+                    "authors": cprint("\n".join(_info["authors"]), fore_256="blue"),
                     "packages": "\n".join(_packages),
                 }
                 if len(_dependencies) > 0:
@@ -91,8 +94,8 @@ def main(check_poetry_path, copy_clipboard):
                     "intro",
                     message="Make your choice:",
                     choices=[
-                        "show script commands",
-                        "execute poetry commands",
+                        "run script commands",
+                        "run poetry commands",
                         "< exit",
                     ],
                     default="no",
@@ -100,7 +103,7 @@ def main(check_poetry_path, copy_clipboard):
             ]
             start_seq = inquirer.prompt(q)
 
-            if start_seq["intro"] == "show script commands":
+            if start_seq["intro"] == "run script commands":
 
                 # check scripts with inputs
                 if _attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
@@ -111,7 +114,7 @@ def main(check_poetry_path, copy_clipboard):
                     print(
                         f"No script command(s) available in {os.path.basename(toml_file)}."
                     )
-            elif start_seq["intro"] == "execute poetry commands":
+            elif start_seq["intro"] == "run poetry commands":
                 # choice what do you want?
                 _choices = list(EPoetryCmds._value2member_map_)
                 if (
@@ -194,12 +197,16 @@ def _run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
             input("Press Enter to continue ...")
 
 
+def cprint(val, fore_256: str = "white"):
+    return "{}{}{}".format(getattr(Fore, fore_256), str(val), getattr(Style, "reset"))
+
+
 def _print_title(title: str, width: int, str_repeat: str = "~"):
     _exec_len = len(title)
     _lines = str_repeat * (_exec_len if _exec_len > width else width)
-    print(fg.black(_lines))
-    print(fg.blue(title))
-    print(fg.black(_lines))
+    print(cprint(_lines, fore_256="grey_0"))
+    print(cprint(title, fore_256="deep_sky_blue_4a"))
+    print(cprint(_lines, fore_256="grey_0"))
 
 
 def _execute_cmd(exec_path: str, cmd: str):
@@ -252,7 +259,7 @@ def _deps(pp_dict: dict, section: str = "dependencies", col: str = "white") -> l
         _dlist = pp_dict["tool"]["poetry"][section]
         _dl = []
         for k, v in _dlist.items():
-            _dl.append([getattr(fg, col)(k), v])
+            _dl.append([cprint(k, fore_256=col), v])
         return _dl
     else:
         return []
@@ -261,7 +268,14 @@ def _deps(pp_dict: dict, section: str = "dependencies", col: str = "white") -> l
 def _tabs(_deps_list: list, _deps_dev_list: list, as_table: bool = True):
     tab = []
     if len(_deps_list) > 0 and len(_deps_dev_list) > 0:
-        tab = [[fg.lightgreen("prod"), "", fg.lightblue("dev"), ""]]
+        tab = [
+            [
+                cprint("prod", fore_256="light_green"),
+                "",
+                cprint("dev", fore_256="light_blue"),
+                "",
+            ]
+        ]
         if len(_deps_list) >= len(_deps_dev_list):
             i = 0
             for i in range(len(_deps_list)):
