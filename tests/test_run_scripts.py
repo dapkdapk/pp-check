@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.ppcheck import _run_scripts
+from app.libs.functions import run_scripts
 
 
 class TestRunScripts(unittest.TestCase):
@@ -11,11 +11,11 @@ class TestRunScripts(unittest.TestCase):
     @patch("pyperclip.copy")
     @patch("os.path.dirname")
     @patch(
-        "app.ppcheck._execute_cmd"
+        "app.libs.functions.execute_cmd"
     )  # Replace 'app.ppcheck' with the actual module name
-    @patch("app.ppcheck._print_title")
-    @patch("app.ppcheck._create_table")
-    @patch("app.ppcheck.input")
+    @patch("app.libs.functions.print_title")
+    @patch("app.libs.functions.create_table")
+    @patch("app.libs.functions.input")
     def test_run_script_positive(
         self,
         mock_input,
@@ -41,7 +41,7 @@ class TestRunScripts(unittest.TestCase):
         ]
 
         with patch("builtins.print") as mocked_print:
-            _run_scripts(pp_dict, copy_clipboard=True, toml_file="mocked.toml")
+            run_scripts(pp_dict, copy_clipboard=True, toml_file="mocked.toml")
             # Check if the command was executed correctly
             mock_execute_cmd.assert_called_once_with(
                 "/path/to/toml", "poetry run test_script --arg1 value1"
@@ -51,9 +51,9 @@ class TestRunScripts(unittest.TestCase):
     @patch("inquirer.prompt")
     @patch("pyperclip.copy")
     @patch("os.path.dirname")
-    @patch("app.ppcheck._execute_cmd")
-    @patch("app.ppcheck._print_title")
-    @patch("app.ppcheck._create_table")
+    @patch("app.libs.functions.execute_cmd")
+    @patch("app.libs.functions.print_title")
+    @patch("app.libs.functions.create_table")
     def test_run_script_negative(
         self,
         mock_create_table,
@@ -81,16 +81,16 @@ class TestRunScripts(unittest.TestCase):
             with self.assertRaises(
                 Exception
             ):  # Expecting an exception due to invalid script
-                _run_scripts(pp_dict, copy_clipboard=False, toml_file="mocked.toml")
+                run_scripts(pp_dict, copy_clipboard=False, toml_file="mocked.toml")
             mocked_print.assert_called()  # Ensure print was called
 
     @patch("inquirer.prompt")
     @patch("pyperclip.copy")
     @patch("os.path.dirname")
-    @patch("app.ppcheck._execute_cmd")
-    @patch("app.ppcheck._print_title")
-    @patch("app.ppcheck._create_table")
-    @patch("app.ppcheck.input")
+    @patch("app.libs.functions.execute_cmd")
+    @patch("app.libs.functions.print_title")
+    @patch("app.libs.functions.create_table")
+    @patch("app.libs.functions.input")
     def test_run_script_edge_case(
         self,
         mock_input,
@@ -122,7 +122,7 @@ class TestRunScripts(unittest.TestCase):
         ]
 
         with patch("builtins.print") as mocked_print:
-            _run_scripts(pp_dict, copy_clipboard=False, toml_file="mocked.toml")
+            run_scripts(pp_dict, copy_clipboard=False, toml_file="mocked.toml")
             # Check if the command was executed correctly
             mock_execute_cmd.assert_called_once_with(
                 "/path/to/toml", "poetry run test_script "
