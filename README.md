@@ -49,3 +49,8 @@ Options:
   --help  Show this message and exit.
 ```
 
+## screenshots
+
+| MacOSX    | <img src="res/mac.png"> |
+|---------------|:------------------------|
+| Windows    | <img src="res/win.png"> |
