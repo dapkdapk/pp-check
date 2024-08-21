@@ -19,7 +19,7 @@ def run_exec(cmd, exec_path, line_len: int = 72):
     print_title(".. execution took %s seconds" % (time.time() - start_time), line_len)
 
 
-def run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
+def run_scripts(pp_dict, toml_file, line_len: int = 72):
     _sub_continue = True
     _choices = [
         "poetry run {}".format(cmd)
@@ -45,11 +45,7 @@ def run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
             ]
             answers_sub = inquirer.prompt(sub_questions, theme=GreenPassion())
             cmd = "{} {}".format(answers["script"], answers_sub["args"])
-            if copy_clipboard:
-                pyperclip.copy(cmd)
-            _exec_title = (
-                "exec: " + cmd + (" <- copy to clipboard" if copy_clipboard else "")
-            )
+            _exec_title = "exec: " + cmd
             start_time = time.time()
             print_title(_exec_title, line_len)
             execute_cmd(os.path.dirname(toml_file), cmd)
@@ -57,7 +53,31 @@ def run_scripts(pp_dict, copy_clipboard, toml_file, line_len: int = 72):
             print_title(
                 ".. execution took %s seconds" % (time.time() - start_time), line_len
             )
-            input("Press Enter to continue ...")
+            questions = [
+                inquirer.List(
+                    "endings",
+                    message="What's next?",
+                    choices=[
+                        "Exit with copied command in clipboard",
+                        "Exit without copied command",
+                        "Back to main choice",
+                    ],
+                ),
+            ]
+
+            answers = inquirer.prompt(questions)
+            if (
+                "endings" in answers
+                and answers["endings"] == "Exit with copied command in clipboard"
+            ):
+                pyperclip.copy(cmd)
+                sys.exit()
+            elif (
+                "endings" in answers
+                and answers["endings"] == "Exit without copied command"
+            ):
+                sys.exit()
+            return False
 
 
 def get_info(pp_dict: dict):

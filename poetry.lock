@@ -289,7 +289,7 @@ python-versions = ">=3.8"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10,<3.13"
-content-hash = "7424c74d19f36b8d5f02ddfbfa52fe746d19974bbecaf81fb3bafdbb815a15b5"
+content-hash = "37832d83e7a0f8ab1afa9b9f6b7bfb64883f2c4aebcaf222de408255a3d147e2"
 
 [metadata.files]
 ansicon = [

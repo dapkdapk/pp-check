@@ -46,7 +46,6 @@ Usage: ppcheck [OPTIONS] CHECK_POETRY_PATH
   $ poetry run ppcheck ~/poetry-project
 
 Options:
-  -c, --copy-clipboard  flag for copy choosen command to clipboard
-  --help                Show this message and exit.
+  --help  Show this message and exit.
 ```
 

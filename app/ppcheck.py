@@ -21,13 +21,7 @@ DEFAULT_LINE_LENGTH = 72
 
 @click.command()
 @click.argument("check_poetry_path", type=click.Path(exists=True))
-@click.option(
-    "-c",
-    "--copy-clipboard",
-    is_flag=True,
-    help="flag for copy choosen command to clipboard",
-)
-def main(check_poetry_path, copy_clipboard):
+def main(check_poetry_path):
     """
     This tool is used exclusively for Poetry projects.
     As soon as you have a poetry project in front of you in the console,
@@ -72,7 +66,7 @@ def main(check_poetry_path, copy_clipboard):
 
                 # check scripts with inputs
                 if attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
-                    run_scripts(pp_dict, copy_clipboard, toml_file, DEFAULT_LINE_LENGTH)
+                    run_scripts(pp_dict, toml_file, DEFAULT_LINE_LENGTH)
                 else:
                     print(
                         f"No script command(s) available in {os.path.basename(toml_file)}."
