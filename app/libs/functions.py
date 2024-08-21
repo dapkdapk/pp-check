@@ -65,16 +65,16 @@ def run_scripts(pp_dict, toml_file, line_len: int = 72):
                 ),
             ]
 
-            answers = inquirer.prompt(questions)
+            answers_end = inquirer.prompt(questions)
             if (
-                "endings" in answers
-                and answers["endings"] == "Exit with copied command in clipboard"
+                "endings" in answers_end
+                and answers_end["endings"] == "Exit with copied command in clipboard"
             ):
-                pyperclip.copy(cmd)
+                pyperclip.copy("{}".format(answers["script"]))
                 sys.exit()
             elif (
-                "endings" in answers
-                and answers["endings"] == "Exit without copied command"
+                "endings" in answers_end
+                and answers_end["endings"] == "Exit without copied command"
             ):
                 sys.exit()
             return False
