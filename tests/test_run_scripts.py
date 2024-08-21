@@ -6,19 +6,9 @@ import time
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from app.libs.functions import (
-    attr_exists,
-    cout,
-    create_table,
-    deps,
-    execute_cmd,
-    get_info,
-    print_title,
-    run_exec,
-    run_scripts,
-    short,
-    tabs,
-)
+from app.libs.functions import (attr_exists, cout, create_table, deps,
+                                execute_cmd, get_info, print_title, run_exec,
+                                run_scripts, short, tabs)
 
 
 class TestFunctions(unittest.TestCase):
@@ -31,8 +21,9 @@ class TestFunctions(unittest.TestCase):
 
         run_exec(cmd, exec_path)
         mock_print_title.assert_called()
+        _dest = "" if platform.system() == "Windows" else " > /dev/null"
         mock_subprocess_run.assert_called_with(
-            f"pushd {exec_path} > /dev/null && {cmd} && popd > /dev/null",
+            f"pushd {exec_path}{_dest} && {cmd} && popd{_dest}",
             shell=True,
             stderr=sys.stderr,
             stdout=sys.stdout,
