@@ -3,10 +3,10 @@ import os
 import click
 import inquirer
 import tomli
-from inquirer.themes import BlueComposure
+from pyfiglet import Figlet
 
 from .libs.cls import EPoetryCmds
-from .libs.func import attr_exists, get_info, run_exec, run_scripts
+from .libs.func import attr_exists, cout, get_info, run_exec, run_scripts
 
 """
 author:     dapk@gmx.net
@@ -31,6 +31,11 @@ def main(check_poetry_path):
     set path of poetry project, eg.\n
     $ poetry run ppcheck ~/poetry-project
     """
+    print(
+        Figlet(font="small").renderText("PPCHECK"),
+        "Poetry pyproject.toml check!",
+        end="",
+    )
     try:
         # get/load pyproject.yaml
         toml_file = os.path.join(
@@ -42,9 +47,8 @@ def main(check_poetry_path):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)
 
-            # check info
-            if attr_exists(pp_dict, dict, "tool", "poetry"):
-                print(get_info(pp_dict, True))
+        # get title
+        print(get_info(pp_dict, True))
         _continue = True
         while _continue:
             print("")
@@ -71,7 +75,10 @@ def main(check_poetry_path):
                     run_scripts(pp_dict, toml_dir, DEFAULT_LINE_LENGTH)
                 else:
                     print(
-                        f"No script command(s) available in {os.path.basename(toml_file)}."
+                        cout(
+                            f"No script command(s) available in {os.path.basename(toml_file)}.",
+                            fore_256="light_red",
+                        )
                     )
             elif start_seq["intro"] == "use poetry commands":
                 # choice what do you want?
@@ -85,7 +92,7 @@ def main(check_poetry_path):
                         choices=_choices,
                     ),
                 ]
-                tasks = inquirer.prompt(q, theme=BlueComposure())
+                tasks = inquirer.prompt(q)
 
                 if len(tasks["exec_cmds"]) > 0:
                     for cmd in _choices:
@@ -96,15 +103,27 @@ def main(check_poetry_path):
                                 DEFAULT_LINE_LENGTH,
                             )
             elif start_seq["intro"] == "get info":
-                print(get_info(pp_dict))
+                if len(pp_dict) > 0:
+                    print(get_info(pp_dict))
+                else:
+                    print(
+                        cout(
+                            f"No pyproject.toml available in {toml_dir}.",
+                            fore_256="light_red",
+                        )
+                    )
             elif start_seq["intro"] == "< exit":
                 _continue = False
             else:
-                print(f"ERROR: {toml_file} does not exist.")
+                print(cout(f"{toml_file} does not exist.", fore_256="light_red"))
                 quit()
 
     except Exception as e:
-        print(f"WARNING: Something goes wrong or aborted. {e}")
+        print(
+            cout(
+                f"Something goes wrong or you aborted ppcheck!", fore_256="light_yellow"
+            )
+        )
 
 
 if __name__ == "main":

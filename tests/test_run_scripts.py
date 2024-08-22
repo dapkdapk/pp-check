@@ -132,5 +132,5 @@ class TestFunctions(unittest.TestCase):
         deps_list = [["dep1", "1.0"], ["dep2", "2.0"]]
         dev_deps_list = [["dev1", "1.0"]]
         result = tabs(deps_list, dev_deps_list)
-        self.assertIn("prod", result)
-        self.assertIn("dev", result)
+        self.assertIn("deps", result)
+        self.assertIn("dev-deps", result)

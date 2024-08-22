@@ -10,3 +10,5 @@ class EPoetryCmds(Enum):
     CACHE = "poetry cache clear --all ."
     CONFIG = "poetry config --list"
     INIT = "poetry init"
+    BLACK = "poetry run black ."
+    ISORT = "poetry run isort ."

@@ -4,10 +4,10 @@ import sys
 import time
 
 import inquirer
+import inquirer.themes
 import jmespath
 import pyperclip
 from colored import Fore, Style
-from inquirer.themes import BlueComposure, GreenPassion
 from terminaltables import AsciiTable
 
 
@@ -33,7 +33,7 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                 choices=_choices,
             ),
         ]
-        answers = inquirer.prompt(questions, theme=GreenPassion())
+        answers = inquirer.prompt(questions, theme=inquirer.themes.GreenPassion())
 
         if answers["script"] == "< back":
             _sub_continue = False
@@ -47,14 +47,14 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
             sub_questions = [
                 inquirer.Checkbox(
                     "use",
-                    message="How to execute the command '{}' - key 'space' for selection".format(
+                    message="Selecting by key 'space' and press 'enter' to execute the command '{}'".format(
                         answers["script"]
                     ),
                     choices=sub_choices,
                     default=["> copy command to clipboard", "< exit"],
                 )
             ]
-            answers_sub = inquirer.prompt(sub_questions, theme=BlueComposure())
+            answers_sub = inquirer.prompt(sub_questions)
             if len(answers_sub["use"]) > 0:
                 _exit_end = False
                 _back_end = False
@@ -76,7 +76,7 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
 
 def get_info(pp_dict: dict, short_info: bool = False):
     _info = jmespath.search("tool.poetry", pp_dict)
-    info = {cout("PPCHECK", fore_256="yellow"): "POETRY PYPROJECT.TOML CHECK"}
+    info = {}
     if not short_info:
         _packages = [list(dict(p).values())[0] for p in _info["packages"]]
         _deps_list = deps(pp_dict, "dependencies", "green")
@@ -104,7 +104,10 @@ def get_info(pp_dict: dict, short_info: bool = False):
         )
         if len(_dependencies) > 0:
             info.update({"dependencies": _dependencies})
-    return create_table(info, "")
+    if len(info) > 0:
+        return create_table(info, "")
+    else:
+        return ""
 
 
 def cout(val, fore_256: str = "white"):
@@ -185,9 +188,9 @@ def tabs(_deps_list: list, _deps_dev_list: list, as_table: bool = True):
     if len(_deps_list) > 0 and len(_deps_dev_list) > 0:
         tab = [
             [
-                cout("prod", fore_256="light_green"),
+                cout("deps", fore_256="light_green"),
                 "",
-                cout("dev", fore_256="light_blue"),
+                cout("dev-deps", fore_256="light_blue"),
                 "",
             ]
         ]
@@ -208,13 +211,13 @@ def tabs(_deps_list: list, _deps_dev_list: list, as_table: bool = True):
                     tab.append(["", ""] + _deps_dev_list[i])
                 i += 1
     elif len(_deps_list) > 0 and len(_deps_dev_list) < 1:
-        tab = [["prod", ""]]
+        tab = [["deps", ""]]
         i = 0
         for i in range(len(_deps_list)):
             tab.append(_deps_list[i])
             i += 1
     elif len(_deps_dev_list) > 0 and len(_deps_list) < 1:
-        tab = [["dev", ""]]
+        tab = [["dev-deps", ""]]
         i = 0
         for i in range(len(_deps_dev_list)):
             tab.append(_deps_dev_list[i])
