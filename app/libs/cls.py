@@ -9,3 +9,4 @@ class EPoetryCmds(Enum):
     PYTEST = "poetry run pytest"
     CACHE = "poetry cache clear --all ."
     CONFIG = "poetry config --list"
+    INIT = "poetry init"
