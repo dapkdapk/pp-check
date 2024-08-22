@@ -5,8 +5,8 @@ import inquirer
 import tomli
 from inquirer.themes import BlueComposure
 
-from .libs.classes import EPoetryCmds
-from .libs.functions import attr_exists, get_info, run_exec, run_scripts
+from .libs.cls import EPoetryCmds
+from .libs.func import attr_exists, get_info, run_exec, run_scripts
 
 """
 author:     dapk@gmx.net
@@ -31,19 +31,20 @@ def main(check_poetry_path):
     set path of poetry project, eg.\n
     $ poetry run ppcheck ~/poetry-project
     """
-
     try:
         # get/load pyproject.yaml
         toml_file = os.path.join(
             os.path.expanduser(check_poetry_path), "pyproject.toml"
         )
+        toml_dir = os.path.dirname(toml_file)
+        pp_dict = {}
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)
 
             # check info
             if attr_exists(pp_dict, dict, "tool", "poetry"):
-                print(get_info(pp_dict))
+                print(get_info(pp_dict, True))
         _continue = True
         while _continue:
             print("")
@@ -53,8 +54,9 @@ def main(check_poetry_path):
                     "intro",
                     message="Make your choice:",
                     choices=[
-                        "run script commands",
-                        "run poetry commands",
+                        "use poetry run scripts",
+                        "use poetry commands",
+                        "get info",
                         "< exit",
                     ],
                     default="no",
@@ -62,22 +64,19 @@ def main(check_poetry_path):
             ]
             start_seq = inquirer.prompt(q)
 
-            if start_seq["intro"] == "run script commands":
+            if start_seq["intro"] == "use poetry run scripts":
 
                 # check scripts with inputs
                 if attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
-                    run_scripts(pp_dict, toml_file, DEFAULT_LINE_LENGTH)
+                    run_scripts(pp_dict, toml_dir, DEFAULT_LINE_LENGTH)
                 else:
                     print(
                         f"No script command(s) available in {os.path.basename(toml_file)}."
                     )
-            elif start_seq["intro"] == "run poetry commands":
+            elif start_seq["intro"] == "use poetry commands":
                 # choice what do you want?
                 _choices = list(EPoetryCmds._value2member_map_)
-                if (
-                    os.path.isdir(os.path.join(os.path.dirname(toml_file), "tests"))
-                    == False
-                ):
+                if os.path.isdir(os.path.join(toml_dir, "tests")) == False:
                     _choices.remove(EPoetryCmds.PYTEST.value)
                 q = [
                     inquirer.Checkbox(
@@ -93,9 +92,11 @@ def main(check_poetry_path):
                         if cmd in tasks["exec_cmds"]:
                             run_exec(
                                 cmd,
-                                os.path.dirname(toml_file),
+                                toml_dir,
                                 DEFAULT_LINE_LENGTH,
                             )
+            elif start_seq["intro"] == "get info":
+                print(get_info(pp_dict))
             elif start_seq["intro"] == "< exit":
                 _continue = False
             else:

@@ -3,7 +3,7 @@ import sys
 import unittest
 from unittest.mock import patch
 
-from app.libs.functions import execute_cmd
+from app.libs.func import execute_cmd
 
 
 class TestExecuteCmd(unittest.TestCase):

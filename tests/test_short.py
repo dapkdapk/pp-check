@@ -1,6 +1,6 @@
 import unittest
 
-from app.libs.functions import short
+from app.libs.func import short
 
 
 class TestShortFunction(unittest.TestCase):

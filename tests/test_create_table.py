@@ -1,6 +1,6 @@
 import unittest
 
-from app.libs.functions import create_table
+from app.libs.func import create_table
 
 
 class TestCreateTableFunction(unittest.TestCase):

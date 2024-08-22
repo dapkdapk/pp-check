@@ -1,4 +1,3 @@
-import os
 import platform
 import subprocess
 import sys
@@ -8,7 +7,7 @@ import inquirer
 import jmespath
 import pyperclip
 from colored import Fore, Style
-from inquirer.themes import GreenPassion
+from inquirer.themes import BlueComposure, GreenPassion
 from terminaltables import AsciiTable
 
 
@@ -16,10 +15,10 @@ def run_exec(cmd, exec_path, line_len: int = 72):
     start_time = time.time()
     print_title(f"Execute '{cmd}'", line_len)
     execute_cmd(exec_path, cmd)
-    print_title(".. execution took %s seconds" % (time.time() - start_time), line_len)
+    print_title(".. it tooks %s seconds" % (time.time() - start_time), line_len)
 
 
-def run_scripts(pp_dict, toml_file, line_len: int = 72):
+def run_scripts(pp_dict, toml_dir, line_len: int = 72):
     _sub_continue = True
     _choices = [
         "poetry run {}".format(cmd)
@@ -27,7 +26,6 @@ def run_scripts(pp_dict, toml_file, line_len: int = 72):
     ]
     _choices.append("< back")
     while _sub_continue:
-        print(create_table(jmespath.search("tool.poetry.scripts", pp_dict), "scripts"))
         questions = [
             inquirer.List(
                 "script",
@@ -40,62 +38,72 @@ def run_scripts(pp_dict, toml_file, line_len: int = 72):
         if answers["script"] == "< back":
             _sub_continue = False
         else:
+            sub_choices = [
+                "> show --help",
+                "> copy command to clipboard",
+                "< back",
+                "< exit",
+            ]
             sub_questions = [
-                inquirer.Text("args", message="Run w/ argument(s)", default="--help"),
+                inquirer.Checkbox(
+                    "use",
+                    message="How to execute the command '{}' - key 'space' for selection".format(
+                        answers["script"]
+                    ),
+                    choices=sub_choices,
+                    default=["> copy command to clipboard", "< exit"],
+                )
             ]
-            answers_sub = inquirer.prompt(sub_questions, theme=GreenPassion())
-            cmd = "{} {}".format(answers["script"], answers_sub["args"])
-            _exec_title = "exec: " + cmd
-            start_time = time.time()
-            print_title(_exec_title, line_len)
-            execute_cmd(os.path.dirname(toml_file), cmd)
-            print("")
-            print_title(
-                ".. execution took %s seconds" % (time.time() - start_time), line_len
-            )
-            questions = [
-                inquirer.List(
-                    "endings",
-                    message="What's next?",
-                    choices=[
-                        "Exit with copied command in clipboard",
-                        "Exit without copied command",
-                        "Back to main choice",
-                    ],
-                ),
-            ]
-
-            answers_end = inquirer.prompt(questions)
-            if (
-                "endings" in answers_end
-                and answers_end["endings"] == "Exit with copied command in clipboard"
-            ):
-                pyperclip.copy("{}".format(answers["script"]))
-                sys.exit()
-            elif (
-                "endings" in answers_end
-                and answers_end["endings"] == "Exit without copied command"
-            ):
-                sys.exit()
-            return False
+            answers_sub = inquirer.prompt(sub_questions, theme=BlueComposure())
+            if len(answers_sub["use"]) > 0:
+                _exit_end = False
+                _back_end = False
+                for cmd in answers_sub["use"]:
+                    if cmd == "> copy command to clipboard":
+                        pyperclip.copy("{}".format(answers["script"]))
+                    elif cmd == "> show --help":
+                        cmd = "{} {}".format(answers["script"], "--help")
+                        run_exec(cmd, toml_dir, line_len)
+                    elif cmd == "< exit":
+                        _exit_end = True
+                    elif cmd == "< back":
+                        _back_end = True
+                if _exit_end:
+                    sys.exit()
+                if _back_end:
+                    _sub_continue = False
 
 
-def get_info(pp_dict: dict):
+def get_info(pp_dict: dict, short_info: bool = False):
     _info = jmespath.search("tool.poetry", pp_dict)
-    _packages = [list(dict(p).values())[0] for p in _info["packages"]]
-    _deps_list = deps(pp_dict, "dependencies", "green")
-    _deps_dev_list = deps(pp_dict, "dev-dependencies", "blue")
-    _dependencies = tabs(_deps_list, _deps_dev_list)
-    info = {
-        cout("PPCHECK", fore_256="yellow"): "POETRY PYPROJECT.TOML CHECK",
-        "name": cout(_info["name"], fore_256="light_green"),
-        "version": cout(_info["version"], fore_256="light_blue"),
-        "description": cout(short(_info["description"], 72), fore_256="light_magenta"),
-        "authors": cout("\n".join(_info["authors"]), fore_256="blue"),
-        "packages": "\n".join(_packages),
-    }
-    if len(_dependencies) > 0:
-        info.update({"dependencies": _dependencies})
+    info = {cout("PPCHECK", fore_256="yellow"): "POETRY PYPROJECT.TOML CHECK"}
+    if not short_info:
+        _packages = [list(dict(p).values())[0] for p in _info["packages"]]
+        _deps_list = deps(pp_dict, "dependencies", "green")
+        _deps_dev_list = deps(
+            pp_dict,
+            [
+                "dev-dependencies",
+                "dev.dependencies",
+                "group.dev.dependencies",
+                "group.test.dependencies",
+            ],
+            "blue",
+        )
+        _dependencies = tabs(_deps_list, _deps_dev_list)
+        info.update(
+            {
+                "name": cout(_info["name"], fore_256="light_green"),
+                "version": cout(_info["version"], fore_256="light_blue"),
+                "description": cout(
+                    short(_info["description"], 72), fore_256="light_magenta"
+                ),
+                "authors": cout("\n".join(_info["authors"]), fore_256="blue"),
+                "packages": "\n".join(_packages),
+            }
+        )
+        if len(_dependencies) > 0:
+            info.update({"dependencies": _dependencies})
     return create_table(info, "")
 
 
@@ -156,15 +164,20 @@ def short(input_str: str, char_length: int, ends: str = "..."):
         return input_str
 
 
-def deps(pp_dict: dict, section: str = "dependencies", col: str = "white") -> list:
-    if attr_exists(pp_dict, dict, "tool", "poetry", section):
-        _dlist = jmespath.search("tool.poetry", pp_dict)[section]
-        _dl = []
-        for k, v in _dlist.items():
-            _dl.append([cout(k, fore_256=col), v])
-        return _dl
-    else:
-        return []
+def deps(
+    pp_dict: dict, sections: str | list = "dependencies", col: str = "white"
+) -> list:
+    if isinstance(sections, str):
+        sections = [sections]
+    _dl = []
+    for section in sections:
+        use = ["tool", "poetry"]
+        use.extend(str(section).split("."))
+        if attr_exists(pp_dict, dict, *use):
+            _dlist = jmespath.search(".".join(use[:-1]), pp_dict)[use[-1:][0]]
+            for k, v in _dlist.items():
+                _dl.append([cout(k, fore_256=col), v])
+    return _dl
 
 
 def tabs(_deps_list: list, _deps_dev_list: list, as_table: bool = True):

@@ -7,3 +7,5 @@ class EPoetryCmds(Enum):
     INSTALL = "poetry install"
     SHOW_TREE = "poetry show --tree"
     PYTEST = "poetry run pytest"
+    CACHE = "poetry cache clear --all ."
+    CONFIG = "poetry config --list"

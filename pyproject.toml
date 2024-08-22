@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pp-check"
-version = "0.1.15"
+version = "0.1.16"
 description = "This tool is used exclusively for Poetry projects. As soon as you have a poetry project in front of you in the console, you can use this tool to quickly find out which script commands the poetry project contains."
 authors = ["dapk <pio4000@googlemail.com>"]
 readme = "README.md"
@@ -21,7 +21,7 @@ colored = "2.2.4"
 pyperclip = "1.9.0"
 jmespath = "1.0.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "24.4.2"
 isort = "5.13.2"
 pytest = "8.2.2"

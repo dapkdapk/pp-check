@@ -1,4 +1,4 @@
-poetry install
+poetry install --no-cache --only main
 poetry run pytest
 poetry build
 
@@ -6,4 +6,4 @@ poetry build
 @set /p myver= < tmpFile
 @del tmpFile
 
-pip install --upgrade --force-reinstall dist/pp_check-%myver%-py3-none-any.whl
+pip install --upgrade dist/pp_check-%myver%-py3-none-any.whl

@@ -1,20 +1,19 @@
 import os
 import platform
-import subprocess
 import sys
-import time
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
-from app.libs.functions import (attr_exists, cout, create_table, deps,
-                                execute_cmd, get_info, print_title, run_exec,
-                                run_scripts, short, tabs)
+import pyperclip
+
+from app.libs.func import (attr_exists, cout, create_table, deps, execute_cmd,
+                           get_info, run_exec, run_scripts, short, tabs)
 
 
 class TestFunctions(unittest.TestCase):
 
-    @patch("app.libs.functions.subprocess.run")
-    @patch("app.libs.functions.print_title")
+    @patch("app.libs.func.subprocess.run")
+    @patch("app.libs.func.print_title")
     def test_run_exec(self, mock_print_title, mock_subprocess_run):
         cmd = "echo Hello World"
         exec_path = os.getcwd()
@@ -29,28 +28,42 @@ class TestFunctions(unittest.TestCase):
             stdout=sys.stdout,
         )
 
-    @patch("app.libs.functions.inquirer.prompt")
-    @patch("app.libs.functions.execute_cmd")
-    @patch("sys.exit")
-    def test_run_scripts(self, mock_sys_exit, mock_execute_cmd, mock_prompt):
-        pp_dict = {
-            "tool": {
-                "poetry": {
-                    "scripts": {"script1": "description1", "script2": "description2"}
-                }
-            }
-        }
-        toml_file = "./pyproject.toml"
+    @patch("inquirer.prompt")
+    @patch("pyperclip.copy")
+    @patch("app.libs.func.run_exec")
+    def test_run_script_exit(self, mock_run_exec, mock_copy, mock_prompt):
+        # Setup mock responses
         mock_prompt.side_effect = [
-            {"script": "poetry run script1"},
-            {"args": "--help"},
-            {"endings": "Exit without copied command"},
+            {"script": "example_script"},  # First prompt response
+            {"use": ["< exit"]},  # Second prompt response
         ]
 
-        run_scripts(pp_dict, toml_file)
-        mock_execute_cmd.assert_called_with(
-            os.path.dirname(toml_file), "poetry run script1 --help"
-        )
+        pp_dict = {
+            "tool": {"poetry": {"scripts": {"example_script": "example command"}}}
+        }
+        toml_dir = "dummy_dir"
+
+        with self.assertRaises(SystemExit):
+            run_scripts(pp_dict, toml_dir)
+
+    @patch("inquirer.prompt")
+    def test_run_script_back(self, mock_prompt):
+        # Setup mock responses
+        mock_prompt.side_effect = [
+            {"script": "example_script"},  # First prompt response
+            {"use": ["< back"]},  # Second prompt response
+        ]
+
+        pp_dict = {
+            "tool": {"poetry": {"scripts": {"example_script": "example command"}}}
+        }
+        toml_dir = "dummy_dir"
+
+        # Execute the function and assert that it does not raise an error
+        try:
+            run_scripts(pp_dict, toml_dir)
+        except Exception as e:
+            self.fail(f"run_scripts raised an exception: {e}")
 
     def test_get_info(self):
         pp_dict = {
@@ -80,7 +93,7 @@ class TestFunctions(unittest.TestCase):
                 cout("Test"), "\x1b[38;5;15mTest\x1b[0m"
             )  # Default is white
 
-    @patch("app.libs.functions.subprocess.run")
+    @patch("app.libs.func.subprocess.run")
     def test_execute_cmd(self, mock_subprocess_run):
         if str(platform.platform()).startswith("mac"):
             exec_path = os.getcwd()

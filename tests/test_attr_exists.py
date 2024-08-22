@@ -1,6 +1,6 @@
 import unittest
 
-from app.libs.functions import attr_exists
+from app.libs.func import attr_exists
 
 
 class TestAttrExists(unittest.TestCase):
