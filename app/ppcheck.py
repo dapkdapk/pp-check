@@ -20,7 +20,7 @@ DEFAULT_LINE_LENGTH = 72
 
 
 @click.command()
-@click.argument("check_poetry_path", type=click.Path(exists=True))
+@click.argument("check_poetry_path", type=click.Path(exists=True), required=False)
 def main(check_poetry_path):
     """
     This tool is used exclusively for Poetry projects.
@@ -38,6 +38,8 @@ def main(check_poetry_path):
     )
     try:
         # get/load pyproject.yaml
+        if not check_poetry_path:
+            check_poetry_path = os.getcwd()
         toml_file = os.path.join(
             os.path.expanduser(check_poetry_path), "pyproject.toml"
         )
@@ -60,7 +62,7 @@ def main(check_poetry_path):
                     choices=[
                         "use poetry run scripts",
                         "use poetry commands",
-                        "get info",
+                        "get poetry info",
                         "< exit",
                     ],
                     default="no",
@@ -102,7 +104,7 @@ def main(check_poetry_path):
                                 toml_dir,
                                 DEFAULT_LINE_LENGTH,
                             )
-            elif start_seq["intro"] == "get info":
+            elif start_seq["intro"] == "get poetry info":
                 if len(pp_dict) > 0:
                     print(get_info(pp_dict))
                 else:
