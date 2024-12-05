@@ -53,4 +53,6 @@ Options:
 
 | MacOSX    | <img src="res/mac.png"> |
 |---------------|:------------------------|
+| MacOSX    | <img src="res/mac2.png"> |
+|---------------|:------------------------|
 | Windows    | <img src="res/win.png"> |
