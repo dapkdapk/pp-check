@@ -74,9 +74,12 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                     _sub_continue = False
 
 
-def get_info(pp_dict: dict, pl_dict:dict={}, short_info: bool = False):
+def get_info(pp_dict: dict, pl_dict: dict = {}, short_info: bool = False):
     _info = jmespath.search("tool.poetry", pp_dict)
-    _info["metadata"] = "lock-version: {}, pathon-versions: {}".format(cout(jmespath.search('metadata."lock-version"',pl_dict),fore_256="yellow"),cout(jmespath.search('metadata."python-versions"',pl_dict),fore_256="yellow"))
+    _info["metadata"] = "lock-version: {}, python-versions: {}".format(
+        cout(jmespath.search('metadata."lock-version"', pl_dict), fore_256="yellow"),
+        cout(jmespath.search('metadata."python-versions"', pl_dict), fore_256="yellow"),
+    )
     info = {}
     if not short_info:
         _packages = [list(dict(p).values())[0] for p in _info["packages"]]
