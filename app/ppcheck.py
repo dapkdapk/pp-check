@@ -48,9 +48,13 @@ def main(check_poetry_path):
         if os.path.isfile(toml_file):
             with open(toml_file, "rb") as f:
                 pp_dict = tomli.load(f)
+        pl_dict = {}
+        if os.path.isfile("poetry.lock"):
+            with open("poetry.lock", "rb") as f:
+                pl_dict = tomli.load(f)
 
         # get title
-        print(get_info(pp_dict, True))
+        print(get_info(pp_dict, pl_dict,True))
         _continue = True
         while _continue:
             print("")
@@ -106,7 +110,7 @@ def main(check_poetry_path):
                             )
             elif start_seq["intro"] == "get poetry info":
                 if len(pp_dict) > 0:
-                    print(get_info(pp_dict))
+                    print(get_info(pp_dict,pl_dict))
                 else:
                     print(
                         cout(
