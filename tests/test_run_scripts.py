@@ -6,18 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pyperclip
 
-from app.libs.func import (
-    attr_exists,
-    cout,
-    create_table,
-    deps,
-    execute_cmd,
-    get_info,
-    run_exec,
-    run_scripts,
-    short,
-    tabs,
-)
+from app.libs.func import (attr_exists, cout, create_table, deps, execute_cmd,
+                           get_info, run_exec, run_scripts, short, tabs)
 
 
 class TestFunctions(unittest.TestCase):
