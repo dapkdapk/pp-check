@@ -6,7 +6,8 @@ import tomli
 from pyfiglet import Figlet
 
 from .libs.cls import EPoetryCmds
-from .libs.func import attr_exists, cout, get_info, run_exec, run_scripts
+from .libs.func import run_exec, run_scripts
+from .libs.ppinfo import AKPPInfo
 
 """
 author:     dapk@gmx.net
@@ -54,7 +55,7 @@ def main(check_poetry_path):
                 pl_dict = tomli.load(f)
 
         # get title
-        print(get_info(pp_dict, pl_dict, True))
+        print(AKPPInfo.GetInfo(pp_dict, pl_dict, True))
         _continue = True
         while _continue:
             print("")
@@ -77,11 +78,11 @@ def main(check_poetry_path):
             if start_seq["intro"] == "use poetry run scripts":
 
                 # check scripts with inputs
-                if attr_exists(pp_dict, dict, "tool", "poetry", "scripts"):
+                if AKPPInfo.AttrExists(pp_dict, dict, "tool", "poetry", "scripts"):
                     run_scripts(pp_dict, toml_dir, DEFAULT_LINE_LENGTH)
                 else:
                     print(
-                        cout(
+                        AKPPInfo.ColorOut(
                             f"No script command(s) available in {os.path.basename(toml_file)}.",
                             fore_256="light_red",
                         )
@@ -110,10 +111,10 @@ def main(check_poetry_path):
                             )
             elif start_seq["intro"] == "get poetry info":
                 if len(pp_dict) > 0:
-                    print(get_info(pp_dict, pl_dict))
+                    print(AKPPInfo.GetInfo(pp_dict, pl_dict))
                 else:
                     print(
-                        cout(
+                        AKPPInfo.ColorOut(
                             f"No pyproject.toml available in {toml_dir}.",
                             fore_256="light_red",
                         )
@@ -121,12 +122,16 @@ def main(check_poetry_path):
             elif start_seq["intro"] == "< exit":
                 _continue = False
             else:
-                print(cout(f"{toml_file} does not exist.", fore_256="light_red"))
+                print(
+                    AKPPInfo.ColorOut(
+                        f"{toml_file} does not exist.", fore_256="light_red"
+                    )
+                )
                 quit()
 
     except Exception as e:
         print(
-            cout(
+            AKPPInfo.ColorOut(
                 f"Something goes wrong or you aborted ppcheck!", fore_256="light_yellow"
             )
         )
