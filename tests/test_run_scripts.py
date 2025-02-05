@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pyperclip
 
-from app.libs.func import (attr_exists, cout, create_table, deps, execute_cmd,
-                           get_info, run_exec, run_scripts, short, tabs)
+from app.libs.func import execute_cmd, run_exec, run_scripts
+from app.libs.ppinfo import AKPPInfo
 
 
 class TestFunctions(unittest.TestCase):
@@ -79,7 +79,7 @@ class TestFunctions(unittest.TestCase):
                 }
             }
         }
-        result = get_info(pp_dict)
+        result = AKPPInfo.GetInfo(pp_dict)
         self.assertIn("example", result)
         self.assertIn("0.1.0", result)
         self.assertIn("An example package", result)
@@ -87,10 +87,14 @@ class TestFunctions(unittest.TestCase):
 
     def test_cout(self):
         if str(platform.platform()).startswith("mac"):
-            self.assertEqual(cout("Test", "red"), "\x1b[38;5;1mTest\x1b[0m")
-            self.assertEqual(cout("Test", "blue"), "\x1b[38;5;4mTest\x1b[0m")
             self.assertEqual(
-                cout("Test"), "\x1b[38;5;15mTest\x1b[0m"
+                AKPPInfo.ColorOut("Test", "red"), "\x1b[38;5;1mTest\x1b[0m"
+            )
+            self.assertEqual(
+                AKPPInfo.ColorOut("Test", "blue"), "\x1b[38;5;4mTest\x1b[0m"
+            )
+            self.assertEqual(
+                AKPPInfo.ColorOut("Test"), "\x1b[38;5;15mTest\x1b[0m"
             )  # Default is white
 
     @patch("app.libs.func.subprocess.run")
@@ -108,29 +112,23 @@ class TestFunctions(unittest.TestCase):
 
     def test_attr_exists(self):
         obj_dct = {"key1": {"key2": "value"}}
-        self.assertTrue(attr_exists(obj_dct, str, "key1", "key2"))
-        self.assertFalse(attr_exists(obj_dct, str, "key1", "non_existing_key"))
-
-    def test_create_table(self):
-        entries = {"name": "value", "test": "123"}
-        table = create_table(entries)
-        self.assertIn("name", table)
-        self.assertIn("value", table)
+        self.assertTrue(AKPPInfo.AttrExists(obj_dct, str, "key1", "key2"))
+        self.assertFalse(AKPPInfo.AttrExists(obj_dct, str, "key1", "non_existing_key"))
 
     def test_short(self):
-        self.assertEqual(short("Hello World", 5), "Hello...")
-        self.assertEqual(short("Hello", 10), "Hello")
+        self.assertEqual(AKPPInfo.StrShort("Hello World", 5), "Hello...")
+        self.assertEqual(AKPPInfo.StrShort("Hello", 10), "Hello")
 
     def test_deps(self):
         pp_dict = {
             "tool": {"poetry": {"dependencies": {"dep1": "^1.0", "dep2": "^2.0"}}}
         }
-        result = deps(pp_dict)
+        result = AKPPInfo.Dependencies(pp_dict)
         self.assertEqual(len(result), 2)
 
     def test_tabs(self):
         deps_list = [["dep1", "1.0"], ["dep2", "2.0"]]
         dev_deps_list = [["dev1", "1.0"]]
-        result = tabs(deps_list, dev_deps_list)
+        result = AKPPInfo.Table(deps_list, dev_deps_list)
         self.assertIn("deps", result)
         self.assertIn("dev-deps", result)
