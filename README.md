@@ -2,6 +2,12 @@
 
 This tool is used exclusively for Poetry projects. As soon as you have a poetry project in front of you in the console, you can use this tool to quickly find out which script commands the poetry project contains.
 
+## PyPi
+
+```
+pip install pp-check
+```
+
 ## requirements
 
 poetry version >=1.2.0, python version >= 3.10
