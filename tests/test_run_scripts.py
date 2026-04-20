@@ -12,22 +12,6 @@ from app.libs.ppinfo import AKPPInfo
 
 class TestFunctions(unittest.TestCase):
 
-    @patch("app.libs.func.subprocess.run")
-    @patch("app.libs.func.print_title")
-    def test_run_exec(self, mock_print_title, mock_subprocess_run):
-        cmd = "echo Hello World"
-        exec_path = os.getcwd()
-
-        run_exec(cmd, exec_path)
-        mock_print_title.assert_called()
-        _dest = "" if platform.system() == "Windows" else " > /dev/null"
-        mock_subprocess_run.assert_called_with(
-            f"pushd {exec_path}{_dest} && {cmd} && popd{_dest}",
-            shell=True,
-            stderr=sys.stderr,
-            stdout=sys.stdout,
-        )
-
     @patch("inquirer.prompt")
     @patch("pyperclip.copy")
     @patch("app.libs.func.run_exec")

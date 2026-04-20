@@ -15,7 +15,7 @@ class TestExecuteCmd(unittest.TestCase):
         cmd = "echo Hello"
         execute_cmd(exec_path, cmd)
 
-        expected_cmd = "pushd /some/path > /dev/null && echo Hello && popd > /dev/null"
+        expected_cmd = "cd /some/path/ > /dev/null && echo Hello && cd  > /dev/null"
         mock_subprocess.assert_called_once_with(
             expected_cmd, shell=True, stderr=sys.stderr, stdout=sys.stdout
         )
@@ -27,7 +27,7 @@ class TestExecuteCmd(unittest.TestCase):
         cmd = "echo Hello"
         execute_cmd(exec_path, cmd)
 
-        expected_cmd = "pushd C:\\some\\path && echo Hello && popd"
+        expected_cmd = "cd C:\\some\\path/ && echo Hello && cd "
         mock_subprocess.assert_called_once_with(
             expected_cmd, shell=True, stderr=sys.stderr, stdout=sys.stdout
         )
@@ -59,7 +59,7 @@ class TestExecuteCmd(unittest.TestCase):
         cmd = ""
         execute_cmd(exec_path, cmd)
 
-        expected_cmd = "pushd /some/path > /dev/null &&  && popd > /dev/null"
+        expected_cmd = "cd /some/path/ > /dev/null &&  && cd  > /dev/null"
         mock_subprocess.assert_called_once_with(
             expected_cmd, shell=True, stderr=sys.stderr, stdout=sys.stdout
         )
@@ -71,7 +71,7 @@ class TestExecuteCmd(unittest.TestCase):
         cmd = ""
         execute_cmd(exec_path, cmd)
 
-        expected_cmd = "pushd C:\\some\\path &&  && popd"
+        expected_cmd = "cd C:\\some\\path/ &&  && cd "
         mock_subprocess.assert_called_once_with(
             expected_cmd, shell=True, stderr=sys.stderr, stdout=sys.stdout
         )

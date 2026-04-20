@@ -130,11 +130,13 @@ def main(check_poetry_path):
                 quit()
 
     except Exception as e:
+        _message = "" if e is None else str(e)
         print(
             AKPPInfo.ColorOut(
-                f"Something goes wrong or you aborted ppcheck!", fore_256="light_yellow"
+                "Something goes wrong or you aborted ppcheck!", fore_256="light_red"
             )
         )
+        print(AKPPInfo.ColorOut(_message, fore_256="light_yellow"))
 
 
 if __name__ == "main":
