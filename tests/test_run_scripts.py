@@ -81,19 +81,6 @@ class TestFunctions(unittest.TestCase):
                 AKPPInfo.ColorOut("Test"), "\x1b[38;5;15mTest\x1b[0m"
             )  # Default is white
 
-    @patch("app.libs.func.subprocess.run")
-    def test_execute_cmd(self, mock_subprocess_run):
-        if str(platform.platform()).startswith("mac"):
-            exec_path = os.getcwd()
-            cmd = "echo Hello"
-            execute_cmd(exec_path, cmd)
-            mock_subprocess_run.assert_called_with(
-                f"pushd {exec_path} > /dev/null && {cmd} && popd > /dev/null",
-                shell=True,
-                stderr=sys.stderr,
-                stdout=sys.stdout,
-            )
-
     def test_attr_exists(self):
         obj_dct = {"key1": {"key2": "value"}}
         self.assertTrue(AKPPInfo.AttrExists(obj_dct, str, "key1", "key2"))

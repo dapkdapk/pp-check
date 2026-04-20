@@ -61,6 +61,8 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                 _back_end = False
                 for cmd in answers_sub["use"]:
                     if cmd == "> copy command to clipboard":
+                        pyperclip.copy("{}".format(answers["script"]))
+                        """
                         if pyperclip.is_available() is False:
                             print(
                                 AKPPInfo.ColorOut(
@@ -87,6 +89,7 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                                     fore_256="light_green",
                                 )
                             )
+                        """
                     elif cmd == "> show --help":
                         cmd = "{} {}".format(answers["script"], "--help")
                         run_exec(cmd, toml_dir, line_len)
