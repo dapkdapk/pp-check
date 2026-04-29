@@ -61,22 +61,20 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                 _back_end = False
                 for cmd in answers_sub["use"]:
                     if cmd == "> copy command to clipboard":
-                        pyperclip.copy("{}".format(answers["script"]))
-                        """
-                        if pyperclip.is_available() is False:
+                        if _pyperclip_is_available() is False:
                             print(
                                 AKPPInfo.ColorOut(
                                     "Clipboard (pyperclip) functionality is not available on this system.",
                                     fore_256="light_red",
                                 ),
                                 AKPPInfo.ColorOut(
-                                    f"Please type to execute selected command:",
-                                    fore_256="white",
+                                    "Please type to execute selected command by yourself:",
+                                    fore_256="light_yellow",
                                 ),
                             )
                             print(
                                 AKPPInfo.ColorOut(
-                                    f"{answers['script']}", fore_256="light_yellow"
+                                    f"{answers['script']}", fore_256="white"
                                 )
                             )
                         else:
@@ -89,7 +87,6 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                                     fore_256="light_green",
                                 )
                             )
-                        """
                     elif cmd == "> show --help":
                         cmd = "{} {}".format(answers["script"], "--help")
                         run_exec(cmd, toml_dir, line_len)
@@ -119,3 +116,13 @@ def execute_cmd(exec_path: str, cmd: str):
         + " && cd {}".format(_dest)
     )
     subprocess.run(_cmd, shell=True, stderr=sys.stderr, stdout=sys.stdout)
+
+
+def _pyperclip_is_available() -> bool:
+    _ = pyperclip.determine_clipboard()
+    if len(_) > 0:
+        return "pyperclip.init_no_clipboard" not in str(
+            pyperclip.determine_clipboard()[0]
+        )
+    else:
+        return False
