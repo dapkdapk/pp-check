@@ -68,13 +68,13 @@ def run_scripts(pp_dict, toml_dir, line_len: int = 72):
                                     fore_256="light_red",
                                 ),
                                 AKPPInfo.ColorOut(
-                                    "Please type to execute selected command by yourself:",
-                                    fore_256="light_yellow",
+                                    "\nPlease type to execute selected command by yourself:",
+                                    fore_256="white",
                                 ),
                             )
                             print(
                                 AKPPInfo.ColorOut(
-                                    f"{answers['script']}", fore_256="white"
+                                    f"{answers['script']}", fore_256="light_yellow"
                                 )
                             )
                         else:
