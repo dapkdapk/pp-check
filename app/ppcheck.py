@@ -20,9 +20,12 @@ import tomli  # TOML parser for reading pyproject.toml and poetry.lock
 from pyfiglet import Figlet  # ASCII art banner generator
 
 # Internal library imports
-from .libs.cls import EPoetryCmds  # Enum of standard poetry commands (e.g. PYTEST, BUILD)
-from .libs.func import run_exec, run_scripts  # Execution helpers for scripts and commands
-from .libs.ppinfo import AKPPInfo  # Info/formatter utilities: color output, attribute checks, project display
+from .libs.cls import \
+    EPoetryCmds  # Enum of standard poetry commands (e.g. PYTEST, BUILD)
+from .libs.func import (run_exec,  # Execution helpers for scripts and commands
+                        run_scripts)
+from .libs.ppinfo import \
+    AKPPInfo  # Info/formatter utilities: color output, attribute checks, project display
 
 # Maximum line length used for formatting script output tables
 DEFAULT_LINE_LENGTH = 72
